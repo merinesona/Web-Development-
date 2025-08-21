@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Aura — Real Exam Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0b1220; --card:#071029; --accent:#7c3aed; --muted:#94a3b8;
+      --correct:#10b981; --incorrect:#f59e0b; --unanswered:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:Inter,ui-sans-serif,system-ui,Arial;
+      background:linear-gradient(180deg,#071025,#061226);color:#e6eef8;
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px
+    }
+    .wrap{width:100%;max-width:960px}
+    .card{
+      background:linear-gradient(180deg,var(--card),#061226);
+      padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,0.6);margin-bottom:18px
+    }
+    h1,h2{margin:0 0 12px 0}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr} .side{order:2}}
+    .centered{max-width:720px;margin:0 auto}
+
+    /* buttons / inputs */
+    .btn{
+      background:linear-gradient(90deg,var(--accent),#06b6d4);border:0;padding:10px 12px;
+      border-radius:10px;color:white;font-weight:600;cursor:pointer
+    }
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    label{display:block;color:var(--muted);font-size:13px;margin-top:8px}
+    input[type="text"], input[type="email"], input[type="password"]{
+      width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);
+      background:transparent;color:inherit;margin-top:6px
+    }
+    .small{font-size:13px;color:var(--muted)}
+    .password-row{position:relative;display:flex;align-items:center}
+    .eye{position:absolute;right:10px;cursor:pointer;user-select:none}
+
+    /* quiz layout */
+    .quiz-box{position:relative;padding:18px;border-radius:12px;background:linear-gradient(180deg,#0b1220,#061226);min-height:320px}
+    .q-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .q-title{font-size:18px;font-weight:700}
+    .perq-timer{font-weight:700;font-size:16px;background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px}
+    .question{margin-top:16px;margin-bottom:16px;font-size:16px}
+    .options{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .opt{
+      padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);
+      cursor:pointer;border:1px solid rgba(255,255,255,0.06)
+    }
+    .opt:hover{transform:translateY(-2px);transition:all .12s ease}
+    .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
+    .small-muted{color:var(--muted);font-size:13px}
+
+    /* side panel */
+    .side .card{padding:14px}
+
+    /* review */
+    .review-item{padding:12px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.02)}
+    .label-correct{color:var(--correct);font-weight:700}
+    .label-incorrect{color:var(--incorrect);font-weight:700}
+    .label-unanswered{color:var(--unanswered);font-weight:700}
+
+    @media (max-width:520px){
+      .grid{grid-template-columns:1fr}
+      .quiz-box{padding:14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card centered">
+      <h1>Aura — Real Exam Demo</h1>
+      <p class="small">Sign up with your email & password (stored locally). Toggle to Login if you already have an account.</p>
+
+      <div style="display:flex;gap:8px;margin-top:12px" id="authToggle">
+        <button class="btn" id="showSignupBtn">Sign up</button>
+        <button class="btn ghost" id="showLoginBtn">Login</button>
+      </div>
+
+      <!-- Auth box -->
+      <div style="margin-top:14px" id="authBox">
+        <!-- Signup -->
+        <div id="signupForm">
+          <label>Email</label>
+          <input id="suEmail" type="email" placeholder="you@example.com" />
+          <label>Password</label>
+          <div class="password-row">
+            <input id="suPass" type="password" placeholder="Create password (min 4 chars)" />
+            <span class="eye" id="suEye">👁</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn" onclick="signup()">Create account</button>
+            <button class="btn ghost" onclick="clearAuthInputs()">Clear</button>
+          </div>
+        </div>
+
+        <!-- Login -->
+        <div id="loginForm" style="display:none">
+          <label>Email</label>
+          <input id="liEmail" type="email" placeholder="you@example.com" />
+          <label>Password</label>
+          <div class="password-row">
+            <input id="liPass" type="password" placeholder="Your password" />
+            <span class="eye" id="liEye">👁</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn" onclick="login()">Login</button>
+            <button class="btn ghost" onclick="showSignup()">Create account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <main>
+        <!-- Countdown -->
+        <div id="countdownCard" class="card" style="display:none">
+          <h2>Exam starts in</h2>
+          <p class="small-muted">Demo uses a short countdown. You can change it in CONFIG.</p>
+          <div style="margin-top:18px;font-size:28px;font-weight:700" id="startCountdown">00:00</div>
+        </div>
+
+        <!-- Quiz -->
+        <div id="quizCard" class="card quiz-box" style="display:none">
+          <div class="q-top">
+            <div>
+              <div class="q-title" id="qTitle">Question 1 / 15</div>
+              <div class="small-muted" id="qMeta">Topic: Demo • Difficulty: Medium</div>
+            </div>
+            <div class="perq-timer" id="perqTimer">01:00</div>
+          </div>
+
+          <div class="question" id="qText">Loading...</div>
+          <div class="options" id="options"></div>
+
+          <div class="nav-row">
+            <button class="btn ghost" id="prevBtn" onclick="prevQuestion()">Previous</button>
+            <button class="btn" id="nextBtn" onclick="nextQuestion()">Next</button>
+          </div>
+          <div style="margin-top:12px" class="small-muted">Total exam time left: <span id="totalTimer">01:00:00</span></div>
+        </div>
+
+        <!-- Review -->
+        <div id="reviewCard" class="card" style="display:none">
+          <h2>Review — Results & Answers</h2>
+          <div id="reviewList" style="margin-top:12px"></div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="btn" onclick="downloadResults()">Download results (JSON)</button>
+            <button class="btn ghost" onclick="resetAll()">Reset all (clear local data)</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="side">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="small-muted">Signed in as</div>
+              <div id="signedEmail">—</div>
+            </div>
+            <div>
+              <div class="small-muted">Progress</div>
+              <div id="progressCount">0 / 15</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="small-muted">Quick actions</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn ghost" id="saveBtn" onclick="saveState()">Save</button>
+            <button class="btn" id="submitBtn" onclick="manualSubmit()">Submit</button>
+          </div>
+
+          <div style="margin-top:14px" class="small-muted">Notes</div>
+          <div class="small" style="margin-top:6px;color:var(--muted)">
+            Answers and progress are stored locally in your browser until you clear them.
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+<script>
+/* ==========================
+   CONFIG (easy to change)
+   ========================== */
+const CONFIG = {
+  countdownSeconds: 10,       // demo: 10 seconds before exam starts
+  perQuestionSeconds: 60,     // 1 minute per question
+  totalExamSeconds: 3600,     // 1 hour total exam time
+  questionsCount: 15
+};
+/* ========================== */
+
+const KEY_PREFIX = 'aura_quiz_v1_';
+
+/* Sample 15 questions */
+const SAMPLE_QUESTIONS = [
+  { q: 'What is 2 + 2?', opts: ['3','4','5','6'], correct: 1, topic:'Math', diff:'Easy' },
+  { q: 'HTML stands for?', opts: ['HighText Markup','HyperText Markup Language','Hyperlink Text Markup','None'], correct:1, topic:'Web', diff:'Easy' },
+  { q: 'Which planet is known as the Red Planet?', opts:['Earth','Jupiter','Mars','Venus'], correct:2, topic:'Science', diff:'Easy'},
+  { q: 'CSS stands for?', opts:['Cascading Style Sheets','Computer Style Sheets','Creative Style System','None'], correct:0, topic:'Web', diff:'Easy'},
+  { q: 'Which is a fruit?', opts:['Carrot','Mango','Potato','Onion'], correct:1, topic:'General', diff:'Easy'},
+  { q: 'What is 5 * 5?', opts:['10','15','20','25'], correct:3, topic:'Math', diff:'Easy'},
+  { q: 'Binary of decimal 2?', opts:['10','01','11','00'], correct:0, topic:'CS', diff:'Easy'},
+  { q: 'JS stands for?', opts:['JavaScript','JustScript','JavaStyle','None'], correct:0, topic:'Web', diff:'Easy'},
+  { q: 'Largest planet?', opts:['Earth','Mars','Jupiter','Saturn'], correct:2, topic:'Science', diff:'Easy'},
+  { q: 'Water chemical formula?', opts:['H2O','CO2','O2','H2'], correct:0, topic:'Science', diff:'Easy'},
+  { q: '2^3 = ?', opts:['6','8','9','12'], correct:1, topic:'Math', diff:'Easy'},
+  { q: 'React is a?', opts:['Library','Language','OS','Database'], correct:0, topic:'Web', diff:'Easy'},
+  { q: 'MongoDB is?', opts:['SQL DB','NoSQL DB','Spreadsheet','None'], correct:1, topic:'DB', diff:'Easy'},
+  { q: 'Sun rises from?', opts:['West','East','North','South'], correct:1, topic:'General', diff:'Easy'},
+  { q: 'Which is not a programming language?', opts:['Python','HTML','Java','C++'], correct:1, topic:'CS', diff:'Easy'}
+];
+
+/* App state */
+let state = {
+  email: null,
+  signedIn: false,
+  questions: [],
+  answers: [],
+  current: 0,
+  examStartAt: null,
+  examEndAt: null,
+  savedAt: null
+};
+
+/* DOM refs */
+const suEye = document.getElementById('suEye'), liEye = document.getElementById('liEye');
+const signupForm = document.getElementById('signupForm'), loginForm = document.getElementById('loginForm');
+const showSignupBtn = document.getElementById('showSignupBtn'), showLoginBtn = document.getElementById('showLoginBtn');
+const countdownCard = document.getElementById('countdownCard'), quizCard = document.getElementById('quizCard'), reviewCard = document.getElementById('reviewCard');
+const startCountdownEl = document.getElementById('startCountdown'), perqTimerEl = document.getElementById('perqTimer'), totalTimerEl = document.getElementById('totalTimer');
+const qTitle = document.getElementById('qTitle'), qText = document.getElementById('qText'), optionsEl = document.getElementById('options');
+const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+const signedEmailEl = document.getElementById('signedEmail'), progressCountEl = document.getElementById('progressCount');
+const reviewList = document.getElementById('reviewList');
+
+let perQInterval = null, examInterval = null, countdownInterval = null;
+
+/* Storage helpers */
+function storageKeyFor(email){ return KEY_PREFIX + email; }
+function saveToLocal(email, data){
+  try{ localStorage.setItem(storageKeyFor(email), JSON.stringify(data)); }catch(e){ console.warn('save failed',e); }
+}
+function loadFromLocal(email){
+  try{ const raw = localStorage.getItem(storageKeyFor(email)); return raw?JSON.parse(raw):null; }catch(e){ return null;}
+}
+
+/* Auth toggles */
+showSignupBtn.addEventListener('click', showSignup);
+showLoginBtn.addEventListener('click', showLogin);
+function showSignup(){ signupForm.style.display='block'; loginForm.style.display='none'; showSignupBtn.classList.remove('ghost'); showLoginBtn.classList.add('ghost'); }
+function showLogin(){ signupForm.style.display='none'; loginForm.style.display='block'; showLoginBtn.classList.remove('ghost'); showSignupBtn.classList.add('ghost'); }
+
+/* Password eye toggles */
+suEye.addEventListener('click', ()=>{ toggleInput('suPass', suEye); });
+liEye.addEventListener('click', ()=>{ toggleInput('liPass', liEye); });
+function toggleInput(id, eyeEl){
+  const inp = document.getElementById(id);
+  if(!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  eyeEl.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+/* Signup & Login */
+function clearAuthInputs(){ document.getElementById('suEmail').value=''; document.getElementById('suPass').value=''; }
+function signup(){
+  const email = document.getElementById('suEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('suPass').value;
+  if(!email || !pass || pass.length < 4){ alert('Please enter a valid email and password (min 4 chars).'); return; }
+  const creds = { email, pass, createdAt: Date.now() };
+  localStorage.setItem(KEY_PREFIX + 'creds_' + email, JSON.stringify(creds));
+  alert('Account created locally. Please login now.');
+  document.getElementById('liEmail').value = email;
+  document.getElementById('liPass').value = '';
+  showLogin();
+}
+function login(){
+  const email = document.getElementById('liEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('liPass').value;
+  if(!email || !pass){ alert('Enter both email and password'); return; }
+  const raw = localStorage.getItem(KEY_PREFIX + 'creds_' + email);
+  if(!raw){ alert('No account found for that email. Please sign up.'); showSignup(); return; }
+  const creds = JSON.parse(raw);
+  if(creds.pass !== pass){ alert('Invalid password'); return; }
+  state.email = email; state.signedIn = true;
+  signedEmailEl.textContent = email;
+
+  const prev = loadFromLocal(email);
+  if(prev && confirm('Previous progress found. Resume?')) {
+    state = Object.assign(state, prev);
+    if(!state.examStartAt) state.examStartAt = Date.now();
+    if(!state.examEndAt) state.examEndAt = state.examStartAt + CONFIG.totalExamSeconds * 1000;
+    showCountdownOrQuiz();
+  } else {
+    initNewExamForUser(email);
+    showCountdownOrQuiz();
+  }
+}
+
+/* Initialize new exam */
+function initNewExamForUser(email){
+  state.questions = SAMPLE_QUESTIONS.slice(0, CONFIG.questionsCount);
+  state.answers = Array(state.questions.length).fill(null);
+  state.current = 0;
+  state.examStartAt = Date.now() + (CONFIG.countdownSeconds * 1000);
+  state.examEndAt = state.examStartAt + (CONFIG.totalExamSeconds * 1000);
+  state.savedAt = Date.now();
+  saveState();
+}
+
+/* Countdown or quiz */
+function showCountdownOrQuiz(){
+  document.getElementById('authBox').style.display = 'none';
+  document.getElementById('authToggle').style.display = 'none';
+  const now = Date.now();
+  (state.examStartAt <= now) ? showQuiz() : showCountdown();
+}
+function showCountdown(){
+  countdownCard.style.display = 'block';
+  quizCard.style.display = 'none';
+  reviewCard.style.display = 'none';
+  updateCountdown();
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(updateCountdown, 1000);
+}
+function updateCountdown(){
+  const now = Date.now();
+  const diff = Math.max(0, state.examStartAt - now);
+  const s = Math.floor(diff / 1000);
+  const hrs = Math.floor(s / 3600); const mins = Math.floor((s % 3600) / 60); const secs = s % 60;
+  startCountdownEl.textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  if(diff <= 0){ clearInterval(countdownInterval); showQuiz(); }
+}
+
+/* Quiz render & timers */
+function showQuiz(){
+  countdownCard.style.display = 'none';
+  quizCard.style.display = 'block';
+  reviewCard.style.display = 'none';
+  startExamTimer();
+  renderQuestion();
+  startPerQuestionTimer();
+  updateProgressUI();
+  saveState();
+}
+function renderQuestion(){
+  const idx = state.current;
+  const q = state.questions[idx];
+  qTitle.textContent = `Question ${idx+1} / ${state.questions.length}`;
+  qText.textContent = q.q;
+  document.getElementById('qMeta').textContent = `Topic: ${q.topic || 'General'} • Difficulty: ${q.diff || 'Medium'}`;
+
+  optionsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'center';
+    div.style.gap = '10px';
+    div.tabIndex = 0;
+    div.dataset.i = i;
+    div.innerHTML = `<div><strong>${String.fromCharCode(65+i)}.</strong> ${opt}</div>`;
+    if(state.answers[idx] === i) div.style.outline = '2px solid rgba(124,58,237,0.28)';
+    div.addEventListener('click', ()=>{ selectOption(i); });
+    div.addEventListener('keydown', (e)=>{ if(e.key==='Enter') selectOption(i); });
+    optionsEl.appendChild(div);
+  });
+
+  prevBtn.style.display = idx === 0 ? 'none' : 'inline-block';
+  nextBtn.textContent = (idx === state.questions.length - 1) ? 'Submit' : 'Next';
+  updateProgressUI();
+}
+function selectOption(optIndex){
+  state.answers[state.current] = optIndex;
+  renderQuestion();
+  saveState();
+}
+function prevQuestion(){
+  if(state.current > 0){
+    state.current -= 1;
+    restartPerQuestionTimer();
+    renderQuestion();
+    saveState();
+  }
+}
+function nextQuestion(){
+  if(state.current < state.questions.length - 1){
+    state.current += 1;
+    restartPerQuestionTimer();
+    renderQuestion();
+    saveState();
+  } else {
+    manualSubmit(); // final question -> submit
+  }
+}
+
+/* Per-question timer */
+function startPerQuestionTimer(){
+  clearInterval(perQInterval);
+  let left = CONFIG.perQuestionSeconds;
+  perqTimerEl.textContent = formatSeconds(left);
+  perQInterval = setInterval(()=>{
+    left--;
+    perqTimerEl.textContent = formatSeconds(left);
+    if(left <= 0){
+      clearInterval(perQInterval);
+      if(state.current < state.questions.length - 1){
+        state.current++;
+        restartPerQuestionTimer();
+        renderQuestion();
+        saveState();
+      } else {
+        manualSubmit();
+      }
+    }
+  }, 1000);
+}
+function restartPerQuestionTimer(){ clearInterval(perQInterval); startPerQuestionTimer(); }
+
+/* Total exam timer */
+function startExamTimer(){
+  clearInterval(examInterval);
+  examInterval = setInterval(()=>{
+    const now = Date.now();
+    const leftMs = Math.max(0, state.examEndAt - now);
+    totalTimerEl.textContent = formatHMS(Math.ceil(leftMs / 1000));
+    if(leftMs <= 0){
+      clearInterval(examInterval);
+      manualSubmit(true); // auto submit
+    }
+  }, 1000);
+}
+
+/* Submit & Review */
+function manualSubmit(auto=false){
+  clearInterval(perQInterval); clearInterval(examInterval); clearInterval(countdownInterval);
+  state.savedAt = Date.now();
+  saveState();
+  showReview(auto);
+}
+function showReview(auto){
+  quizCard.style.display = 'none';
+  countdownCard.style.display = 'none';
+  reviewCard.style.display = 'block';
+  reviewList.innerHTML = '';
+
+  let correctCount = 0;
+  state.questions.forEach((q, idx)=>{
+    const user = state.answers[idx];
+    const isCorrect = user === q.correct;
+    if(isCorrect) correctCount++;
+
+    const item = document.createElement('div');
+    item.className = 'review-item';
+
+    let statusLabel = user === null ? `<span class="label-unanswered">Not answered</span>`
+                    : isCorrect      ? `<span class="label-correct">Correct</span>`
+                    : `<span class="label-incorrect">Incorrect</span>`;
+
+    item.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Q${idx+1}:</strong> ${q.q}</div>
+        <div>${statusLabel}</div>
+      </div>
+    `;
+
+    const optsDiv = document.createElement('div');
+    optsDiv.style.marginTop = '8px';
+    q.opts.forEach((o, i)=>{
+      const row = document.createElement('div');
+      row.style.padding = '6px 8px';
+      row.style.borderRadius = '8px';
+      row.style.marginBottom = '6px';
+      row.style.border = '1px solid rgba(255,255,255,0.06)';
+      if(i === q.correct){
+        row.style.background = 'rgba(16,185,129,0.08)';
+        row.style.border = '1px solid rgba(16,185,129,0.22)';
+      }
+      if(user !== null && user === i && user !== q.correct){
+        row.style.background = 'rgba(245,158,11,0.08)';
+        row.style.border = '1px solid rgba(245,158,11,0.22)';
+      }
+      row.innerHTML = `<strong>${String.fromCharCode(65+i)}.</strong> ${o}`;
+      optsDiv.appendChild(row);
+    });
+
+    const userAnsText = user === null ? '<span style="color:var(--unanswered)">Not answered</span>' : `<strong>${String.fromCharCode(65 + user)}</strong>`;
+    const correctAnsText = `<strong>${String.fromCharCode(65 + q.correct)}</strong>`;
+    const summary = document.createElement('div');
+    summary.className = 'small-muted';
+    summary.style.marginTop = '8px';
+    summary.innerHTML = `Your answer: ${userAnsText} &nbsp; • &nbsp; Correct: ${correctAnsText}`;
+
+    item.appendChild(optsDiv);
+    item.appendChild(summary);
+    reviewList.appendChild(item);
+  });
+
+  const header = document.createElement('div');
+  header.style.marginBottom = '12px';
+  const answered = state.answers.filter(a=>a!==null).length;
+  header.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="small-muted">Answered: ${answered} / ${state.questions.length}</div>
+      <div class="small-muted">Saved at: ${new Date(state.savedAt).toLocaleString()}</div>
+    </div>
+  `;
+  reviewList.prepend(header);
+
+  if(auto){ alert('Time is up. Your exam was submitted automatically.'); }
+}
+
+/* Persistence */
+function saveState(){
+  if(!state.email) return;
+  state.savedAt = Date.now();
+  saveToLocal(state.email, state);
+  updateProgressUI();
+}
+function resetAll(){
+  if(!state.email){ alert('No data to clear'); return; }
+  if(!confirm('Clear all local data for this user?')) return;
+  try{
+    localStorage.removeItem(storageKeyFor(state.email));
+    localStorage.removeItem(KEY_PREFIX + 'creds_' + state.email);
+  }catch(e){}
+  location.reload();
+}
+
+/* Helpers */
+function formatSeconds(s){ const m = Math.floor(s/60); const sec = s%60; return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+function formatHMS(totalS){
+  const hrs = Math.floor(totalS / 3600);
+  const mins = Math.floor((totalS % 3600) / 60);
+  const secs = totalS % 60;
+  return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+}
+function updateProgressUI(){ progressCountEl.textContent = `${state.answers.filter(a=>a!==null).length} / ${state.questions.length}`; }
+function downloadResults(){
+  const out = { email: state.email, savedAt: state.savedAt, answers: state.answers, questions: state.questions };
+  const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `quiz-results-${state.email}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* Init */
+(function initOnLoad(){
+  suEye.textContent = '👁'; liEye.textContent = '👁';
+  showSignup();
+})();
+window.addEventListener('beforeunload', saveState);
+</script>
+</body>
+</html>
