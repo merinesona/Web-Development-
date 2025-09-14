@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aura Handcrafts – Catalogue</title>
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon_circle.png" class="circle-logo">
+<link rel="android-chrome-512x512.png" href="favicon.ico">
+
+<style>
+  :root{
+    --bg:#fff7f4; --card:#ffffff; --ink:#2f2a2a; --muted:#6b6464; --brand:#e89ab0; --brand-2:#f5d4dd; --shadow:0 10px 25px rgba(0,0,0,.08)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  a{color:inherit}
+
+  .circle-logo {width: 100%;max-width: 80px;       /* adjust size */height: 80px;      /* keep it square */border-radius: 50%; /* makes it circular */object-fit: cover;  /* ensures the image fits inside the circle */}
+
+  /* NAVBAR */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border-bottom:1px solid #f0e7e9}
+  .nav-inner{max-width:1100px;margin:auto;display:flex;align-items:center;gap:16px;padding:10px 16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand img{height:40px;width:40px;border-radius:10px;object-fit:cover;border:2px solid var(--brand-2)}
+  .spacer{flex:1}
+  .nav a{padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--ink)}
+  .nav a:hover{background:#fff3f7}
+  .cta{background:var(--brand);color:#fff !important;box-shadow:var(--shadow)}
+  .cta:hover{filter:brightness(.95)}
+
+  /* HERO */
+  .hero{max-width:1150px;margin:18px auto 8px;display:grid;grid-template-columns:1.3fr .9fr;gap:30px;padding:0 16px}
+  .hero h1{font-size:clamp(26px,4.5vw,44px);line-height:1.1;margin:.2em 0 .4em}
+  .badge{display:inline-block;background:#fff;border:1px solid #f3e2e7;color:#7a5d63;padding:6px 10px;border-radius:999px;font-size:12px}
+  .hero-card{background:linear-gradient(180deg,#fff,#fff5f7);border:1px solid #f6e5ea;border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+  .hero .img{border-radius:22px;background:#fff url('images/hero-placeholder.jpg') center/cover no-repeat;min-height:220px;border:1px solid #f3e2e7}
+  #typing-text {font-size: 2rem;font-weight: bold;font-family: 'Times New Roman', Times, serif;border-right: 2px solid black; /* blinking cursor */white-space: nowrap;overflow: hidden;}
+
+  /* CAROUSEL (catalogue photos swipe) */
+  .carousel-wrap{max-width:1000px;margin:0px auto;padding:0 10px}
+  .carousel{position:relative;overflow:hidden;border-radius:18px;border:1px solid #f3e2e7;background:#fff;box-shadow:var(--shadow)}
+  .slides{display:flex;transition:transform .5s ease}
+  .slide{min-width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .slide .photo{min-height:90px;background:#f7f1f2 center/cover no-repeat}
+  .slide .meta{padding:18px}
+  .slide h3{margin:.2em 0}
+  .slide p{color:var(--muted);margin:.2em 0 .8em}
+  .controls{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+  .btn{pointer-events:auto;background:rgba(255,255,255,.85);border:1px solid #ecd8df;border-radius:12px;padding:5px 10px;margin:8px;cursor:pointer}
+  .dots{position:absolute;left:0;right:0;bottom:10px;display:flex;gap:6px;justify-content:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:#e9d2d9;border:1px solid #d9bec6}
+  .dot.active{background:var(--brand)}
+
+  /* PRODUCTS LISTS */
+  .section{max-width:1180px;margin:14px auto;padding:0 16px}
+  .section h1{background-color:#f5d4dd ;margin:auto;text-align:center;padding: 15px;border-radius: 8px;}
+  .list{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,8fr));gap:35px}
+  .card{background:var(--card);border:1px solid #f1e3e8;border-radius:16px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .card .cover{height:300px;background:#f7f1f2 center/cover no-repeat}
+  .card .body{padding:12px}
+  .name{font-weight:700}
+  .meta{font-size:12px;color:var(--muted)}
+  .price{margin-top:auto;padding:12px;border-top:1px dashed #f0e0e6;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .pill{background:#fff7fb;border:1px solid #f2dfe6;border-radius:999px;padding:4px 8px;font-size:12px}
+  .actions{display:flex;gap:8px;padding:0 12px 12px}
+  .btn-w{flex:1;text-align:center;background:var(--brand);color:#fff;border:none;border-radius:12px;padding:8px;cursor:pointer}
+  .btn-s{flex:1;text-align:center;background:#fff;border:1px solid #efcfda;border-radius:12px;padding:8px;cursor:pointer}
+  .btn-s:hover{background:#fff3f7}
+
+  /* CONTACT */
+  .contact{max-width:900px;margin:22px auto;background:#fff;border:1px solid #f3e2e7;border-radius:18px;box-shadow:var(--shadow);padding:16px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .contact .tile{background:#fffafc;border:1px dashed #f0dbe2;border-radius:12px;padding:10px}
+
+  /* FOOTER */
+  footer{margin:24px 0 40px;text-align:center;color:var(--muted) text-align: center;margin-top: 40px;padding: 15px;background: #e89ab0;color: #fff;border-radius: 8px;}
+  footer a {color: #fff;text-decoration: none;font-weight: 600;margin: 0 8px;}
+  footer a:hover {text-decoration: underline;}
+  /* RESPONSIVE */
+  @media (max-width: 860px){
+    .hero{grid-template-columns:1fr;gap:10px}
+    .slide{grid-template-columns:1fr}
+    .slide .photo{min-height:180px}}
+  .catalogue {display: flex;flex-wrap: wrap;gap: 20px; /* space between product cards */}
+
+.gap {margin: 40px 0; /* space between catalogue sections */}
+
+</style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top">
+        <img src="aura logo.png" alt="Aura Handcrafts logo"/>
+        <span>Aura Handcrafts</span>
+      </a>
+      <div class="spacer"></div>
+      <a href="#products">Our Products</a>
+      <a href="contact-us.html">Contact Us</a>
+      <a href="about.html">About us</a>
+      <!-- <a href="Signup.html" class="cta">Signup</a> -->
+      <!-- <a href="Login.html" class="cta">Login</a> -->
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="hero-card">
+      <span class="badge">Handmade resin • Photo prints • Vintage letters</span>
+      <h1>Personal, handcrafted keepsakes made just for you.</h1>
+      <p class="meta">Order & customise through WhatsApp only. Tap any product to start your chat with pre‑filled details.</p>
+    </div>
+    <div class="img hero-card">
+      <span id="typing-text"></span>
+      <p id="hero-description" style="font-family: 'Times New Roman', Times, serif;">Crafting unique handmade treasures just for you! Check our products,customize and order through our Whatsapp.</p>
+    </div>
+  </section>
+
+  <!-- CAROUSEL (3 catalogues) -->
+  <div class="carousel-wrap" id="products">
+    <div class="carousel" id="carousel">
+      <div class="slides" id="slides">
+        <div class="slide" data-target="#photo">
+          <div class="photo" style="background-image:url('')">
+            <img src="Medium polaroids.jpg" style="width:500px;height:auto;" alt="Photo prints">
+          </div>
+          <div class="meta">
+            <h3>📸 Photo Printing Catalogue</h3>
+            <p>Polaroids & albums that make memories last.</p>
+            <button class="btn" onclick="openSection('#photo')">Open list →</button>
+          </div>
+        </div>
+        <div class="slide" data-target="#resin">
+          <div class="photo" style="background-image:url('')">
+             <img src="8 inch agate couple frame.jpg" style="width:500px;height:auto;"  alt="Resin Products">
+          </div>
+          <div class="meta">
+            <h3>🎨 Resin Products Catalogue</h3>
+            <p>Keychains, frames, nameplates & more.</p>
+            <button class="btn" onclick="openSection('#resin')">Open list →</button>
+          </div>
+        </div>
+        <div class="slide" data-target="#letters">
+          <div class="photo" style="background-image:url('')">
+             <img src="Rolling vintage letter.jpg" style="width:400px;height:auto;"  alt="Vintage Letters">
+          </div>
+          <div class="meta">
+            <h3>📜 Custom Letters Catalogue</h3>
+            <p>Vintage handwritten & rolling letters.</p>
+            <button class="btn" onclick="openSection('#letters')">Open list →</button>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="prev">‹</button>
+        <button class="btn" id="next">›</button>
+      </div>
+      <div class="dots" id="dots"></div>
+    </div>
+  </div>
+  <div class="gap"></div>
+  <!-- PHOTO PRINTS LIST (vertical) -->
+  <section class="section" id="photo">
+    <h1 style="text-align: center; font-size: 24px;">📸 Photo Printing</h1>
+    <div class="gap"></div>
+    <div class="list" id="list-photo">
+    </div>
+  </section>
+  <div class="gap"></div>
+  <!-- RESIN LIST (vertical) -->
+  <section class="section" id="resin">
+    <h1 style="text-align: center; font-size: 24px;">🎨 Resin Products</h1>
+    <div class="gap"></div>
+    <div class="list" id="list-resin"></div>
+  </section>
+  <div class="gap"></div>
+<!-- LETTERS LIST (vertical) -->
+  <section class="section" id="letters">
+    <h1 style="text-align: center; font-size: 24px;">📜 Custom Letters</h1>
+    <div class="gap"></div>
+    <div class="list" id="list-letters"></div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <h2>Contact Us</h2>
+    <div class="grid-2">
+      <div class="tile">
+        <strong>WhatsApp Orders</strong>
+        <p class="meta">Dispatch: 20–25 working days • Shipping: 2–3 days after dispatch.<br/>Free shipping on 8" frames & all wooden frames.</p>
+        <a class="btn-w" href="https://wa.me/8501004244?text=Hi%20Aura%20Handcrafts%2C%20I%20want%20to%20place%20an%20order.">Chat on WhatsApp</a>
+      </div>
+      <div class="tile">
+        <strong>Customisation Help</strong>
+        <p class="meta">Send names, dates, colors, quotes or reference photos via WhatsApp and we’ll guide you.</p>
+        <a class="btn-s" href="https://wa.me/your_number?text=Hi%20Aura%20Handcrafts%2C%20I%20need%20help%20customising%20my%20order.">Start a Customisation Chat</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="#aboutus" id="Aboutus">
+      <p style="text-align: center;">Unique & Personalized Handmade Products • Eco-friendly packaging • Perfect for Gifting & Special Occasions</p>
+      <a href="terms-conditions.html">Terms & Conditions</a> |
+      <a href="privacy-policy.html">Privacy Policy</a> |
+      <a href="shipping-policy.html">Shipping Policy</a>
+       </footer>
+       </div>
+    <p style="text-align: center;"> ©<span id="yr"></span> Aura Handcrafts • Handmade with love</p>
+   
+
+<script>
+
+  const text = "Welcome to Aura Handcrafts!";
+const typingElement = document.getElementById("typing-text");
+let index = 0;
+
+function type() {
+  if (index < text.length) {
+    typingElement.textContent += text[index];
+    index++;
+    setTimeout(type, 100); // adjust speed here
+  }
+}
+
+type(); // start typing effect
+
+  // ===== DATA =====
+  const WA = 'your_number'; // ← replace with your WhatsApp number (without + or spaces)
+
+  const photoItems = [
+    {n:'Mini Polaroids (35 pics)', p:120, s:80, img:'mini polaroids.jpg', note:'Cute mini prints'},
+    {n:'Medium Polaroids (20 pics)', p:160, s:80, img:'Medium polaroids.jpg', note:'Best for journaling'},
+    {n:'Large Polaroids (20 pics)', p:200, s:80, img:'large polaroids.jpg',note:'Best for gifting'},
+    {n:'Polaroids Ring Album (15 pics)', p:130, s:80, img:'Polaroids album.jpg', note:'Extra pic ₹10 each.'},
+    {n:'Large Photo Ring Album (15 pics)', p:190, s:80, img:'Photos album.jpg', note:'Extra pic ₹10 each.'},
+    {n:'Calender Photo prints', p:199, s:80, img:'calender prints 2.jpg',note:'12 pics'},
+    {n:'Photo Strips', p:100, s:80, img:'Photo strips.jpg',note:'2 Pieces'},
+    {n:'3x3 Mini Frame', p:259, s:80, img:'3x3 frame.jpg',note:'Launching soon'}
+  ];
+
+  const resinItems = [
+    // {n:'1" Agate Keychain', p:100, s:80, img:'2 inch name agate keychain.jpeg'},
+    // {n:'1" Round Keychain', p:100, s:80, img:'2 inch name agate keychain.jpeg'},
+    {n:'1.5" Agate Keychain', p:100, s:80, img:'2 inch name agate keychain.jpeg'},
+    {n:'1.5" Round Keychain', p:100, s:80, img:'2 inch name agate keychain.jpeg'},
+    {n:'2" Agate Keychain', p:100, s:80, img:'2 inch name agate keychain.jpeg'},
+    {n:'2" Round Keychain', p:120, s:80, img:'2 inch round keychain.jpg'},
+    {n:'3" Agate Keychain', p:150, s:80, img:'3 inch agate keychain.jpg'},
+    {n:'3" Round Keychain', p:150, s:80, img:'3 inch keychain.jpg'},
+    {n:'3" Round Car Hanging', p:250, s:80, img:'3 inch car hanging.jpg'},
+    {n:'3" Heart Keychain', p:350, s:80, img:'3 inch heart keychain.jpeg'},
+    {n:'4" Nameplate / Coaster(Hexagonal)', p:600, s:100, img:'4 hexagon frame.jpg'},
+    {n:'4" Nameplate / Coaster(Agate)', p:600, s:100, img:'4 inc agate fram.jpg'},
+    {n:'4" Beach Theme', p:800, s:100, img:'4 inch beach theme.jpg'},
+    {n:'5" Agate Frame', p:800, s:100, img:'5 inch agate frame.jpg'},
+    {n:'6" Agate Frame (Free Stand)', p:1500, s:150, img:'6 inch agate frame.jpg', free:true},
+    {n:'6" Couple Beach Theme (Free Stand)', p:1800, s:150, img:'6 inch couple frame.jpg', free:true},
+    {n:'6" Beach Theme (Baby) (Free Stand)', p:2000, s:150, img:'6 inch baby keepsake.jpg', free:true},
+    {n:'8" Agate Frame (Free Stand)', p:2000, s:0, img:'8 inch agate name board.jpg', free:true},
+    {n:'8" Beach Theme (Baby) (Free Stand)', p:2500, s:0, img:'8 inch beach theme.jpg', free:true},
+    {n:'8" Couple Beach Theme (Free Stand)', p:2200, s:0, img:'8 inch agate couple frame.jpg', free:true},
+    {n:'12x9 Rectangle Frame (Free Stand)', p:3800, s:0, img:'12x9 frame.jpg', free:true},
+    {n:'6x6 Wooden Frame (Free Stand)', p:2500, s:0, img:'6x6 wooden frame.jpg', free:true},
+    {n:'8x8 Wooden Frame (Free Stand)', p:3000, s:0, img:'8x8 wooden frame.jpg', free:true},
+    {n:'10x10 Wooden Frame (Free Stand)', p:5000, s:0, img:'10x10 wooden frame.jpg', free:true,note:'Launching soon'},
+    {n:'8x10 Wooden Frame (Free Stand)', p:3500, s:0, img:'8x10 wooden frame.jpg', free:true,note:'Launching soon'},
+    {n:'Letter Keychain', p:70, s:80, img:'letter keychain.jpg'},
+    {n:'Fridge Magnets', p:199, s:80, img:'Fridge magnets.jpg',note:'New launch'},
+    {n:'Love Stand', p:599, s:99, img:'Love Stand.jpg'},
+    {n:'Name Stand', p:299, s:99, img:'Name stand.jpg'},
+    {n:'Special Date Stand', p:299, s:99, img:'Special Dates.jpg'},
+    {n:'Bookmarks', p:199, s:99, img:'Bookmarks.jpg',note:'Launching Soon'}
+  ];
+
+  const letterItems = [
+    {n:'Customisable Vintage Handwritten Letter(A4)', p:499, s:100, img:'vintage letter2.jpg', note:'Add names, dates & a message.'},
+    {n:'Rolling Vintage Letter(A4)', p:999, s:50, img:'Rolling vintage letter.jpg', note:'Rolled & sealed vintage style.'},
+    {n:'Mini Vintage Handwritten Letter', p:299, s:100, img:'Mini letters.jpg', note:'Pocket size.'},
+    {n:'Mini rolling messages', p:259, s:100, img:'Mini rolling messages.jpg', note:'10 messages.'}
+  ];
+
+  // ===== HELPERS =====
+  const money = n => `₹${n}`;
+  const waLink = ({catalogue, product}) => `https://wa.me/${WA}?text=${encodeURIComponent(
+    `Hi Aura, I want to order from ${catalogue}:\nProduct: ${product.n}\nUnit Price: ₹${product.p}\nShipping: ₹${product.s}\nTotal per unit: ₹${product.p + product.s}\nCustomisation: (names/colors/quote)\nQuantity: 1\nAddress:`)}`;
+  const waCustom = ({catalogue, product}) => `https://wa.me/${WA}?text=${encodeURIComponent(
+    `Hi Aura, I want to customise ${product.n} from ${catalogue}. Here are my ideas:`)}`;
+
+  function makeCard(product, catalogue){
+    const card = document.createElement('article');
+    card.className = 'card';
+    const total = product.p + product.s;
+    card.innerHTML = `
+      <div class="cover" style="background-image:url('${product.img || 'images/placeholder.jpg'}')"></div>
+      <div class="body">
+        <div class="name">${product.n}</div>
+        <div class="meta">Price ${money(product.p)} • Shipping ${money(product.s)}${product.free? ' • Free stand':''}</div>
+      </div>
+      <div class="price">
+        <span class="pill">Total: ${money(total)}</span>
+        ${product.note? `<span class='pill'>${product.note}</span>`:''}
+        ${product.s===0? `<span class='pill'>Free Shipping</span>`:''}
+      </div>
+      <div class="actions">
+        <a class="btn-w" href="${waLink({catalogue, product})}" target="_blank" rel="noopener">Order on WhatsApp</a>
+        <a class="btn-s" href="${waCustom({catalogue, product})}" target="_blank" rel="noopener">Customise via WhatsApp</a>
+      </div>`;
+    return card;
+  }
+
+  // mount lists
+  function mountList(containerId, items, catalogue){
+    const root = document.getElementById(containerId);
+    items.forEach(it => root.appendChild(makeCard(it, catalogue)));
+  }
+  mountList('list-photo', photoItems, 'Photo Printing');
+  mountList('list-resin', resinItems, 'Resin Products');
+  mountList('list-letters', letterItems, 'Custom Letters');
+
+  // year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ===== CAROUSEL LOGIC =====
+  const slides = document.getElementById('slides');
+  const dots = document.getElementById('dots');
+  const totalSlides = slides.children.length;
+  let idx = 0, timer;
+
+  function renderDots(){
+    dots.innerHTML = '';
+    for(let i=0;i<totalSlides;i++){
+      const d = document.createElement('div');
+      d.className = 'dot'+(i===idx?' active':'');
+      d.onclick = ()=> go(i);
+      dots.appendChild(d);
+    }
+  }
+  function go(i){
+    idx = (i+totalSlides)%totalSlides;
+    slides.style.transform = `translateX(-${idx*100}%)`;
+    renderDots();
+  }
+  function next(){ go(idx+1) }
+  function prev(){ go(idx-1) }
+  document.getElementById('next').onclick = next;
+  document.getElementById('prev').onclick = prev;
+  renderDots();
+  go(0);
+  function auto(){ clearInterval(timer); timer = setInterval(next, 3800) }
+  auto();
+  slides.addEventListener('mouseenter', ()=>clearInterval(timer));
+  slides.addEventListener('mouseleave', auto);
+  // swipe
+  let sx=0; slides.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+  slides.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>40){dx<0?next():prev()}},{passive:true});
+
+  // open section from slide
+  function openSection(hash){
+    document.querySelector(hash).scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.openSection = openSection;
+</script>
+</body>
+</html>
